@@ -3,11 +3,13 @@
 # Winfree R, Fox J, Williams N, Reilly JR, Cariveau D (2015) Abundance of common species, not species richness, drives delivery of a real-world ecosystem service. Ecology Letters (in press)
 # this version of the code was written by James Reilly, Feb 2015
 
-# to use this code with your own data, you will need to replace "EXAMPLE_CROP" with your own system name and create the following three input data files:
+# To use this code with your own data, you will need to replace "EXAMPLE_CROP" with your own system name and create the following three input data files:
 	#1) an individuals data file for each year with sites as the rows and species as the columns, named like this: "price_EXAMPLE_CROP_individuals_2010.csv"
 	#2) an data file with single-visit pollen deposition observations by pollinator ID code: "price_EXAMPLE_CROP_pollen_IDcode.csv"
 	#3) a correspondence table that relates species to pollinator ID codes: "price_EXAMPLE_CROP_species_IDcode.csv"
-# you will also need to adjust the code so the years match those of your study on lines 39-60.
+# You will also need to adjust the code so the years match those of your study on lines 39-60, and set the working directory.
+
+# Example data csv files are provided in the github repository github.com/winfreelab/price-eqn-calcs to show how data must be formatted.  These will run with this code, but the results will be meaningless without copying real data into them.
 
 # Note on a common error:
 # If there is an error like: "Error in baseline$pollen[j] = as.numeric(pollen_summary[subset(speciesID,  : replacement has length zero",
@@ -37,17 +39,17 @@ pollen_multiplier = 1 	# for sensitivity analysis of single visit pollen data
 ############################
 
 	# specify here which individuals_year files you want to use:
-	individuals_2010 <- read.csv(paste("R data/price_", this_study, "_individuals_2010.csv", sep=""), header=TRUE)
-	individuals_2011 <- read.csv(paste("R data/price_", this_study, "_individuals_2011.csv", sep=""), header=TRUE)
-	individuals_2012 <- read.csv(paste("R data/price_", this_study, "_individuals_2012.csv", sep=""), header=TRUE)
+	individuals_2010 <- read.csv(paste("price_", this_study, "_individuals_2010.csv", sep=""), header=TRUE)
+	individuals_2011 <- read.csv(paste("price_", this_study, "_individuals_2011.csv", sep=""), header=TRUE)
+	individuals_2012 <- read.csv(paste("price_", this_study, "_individuals_2012.csv", sep=""), header=TRUE)
 
 	individuals_datasets = list(individuals_2010,individuals_2011,individuals_2012)
 
 	# make a list of years -- do this by hand:
 	yearlist = c(2010, 2011, 2012)
 
-	pollen_data <-  read.csv(paste("R data/price_", this_study, "_pollen_IDcode.csv", sep=""), header=TRUE)
-	speciesID <-  read.csv(paste("R data/price_", this_study, "_species_IDcode.csv", sep=""), header=TRUE)
+	pollen_data <-  read.csv(paste("price_", this_study, "_pollen_IDcode.csv", sep=""), header=TRUE)
+	speciesID <-  read.csv(paste("price_", this_study, "_species_IDcode.csv", sep=""), header=TRUE)
 
 	# get a list of sites from one of the individuals datafiles (here getting it from the 2010 data):
 	sitelist = as.character(individuals_2010$farm)
@@ -221,12 +223,11 @@ for (test_run in c(1,0)) {
 		# remove baseline site from table, since it is meaningless to compare it to itself
 		output = subset(output, comparison_site!=baseline_site[g])
 
+		# save the output into the master list
+		output_list[[g]] = output
 
-	# save the output into the master list
-	output_list[[g]] = output
-
-	mostfunctionalsite = as.character(sitefuncs$farm[which(sitefuncs$func==max(sitefuncs$func))])
-	suggested_sites[g] = mostfunctionalsite
+		mostfunctionalsite = as.character(sitefuncs$farm[which(sitefuncs$func==max(sitefuncs$func))])
+		suggested_sites[g] = mostfunctionalsite
 
 	} # end year loop
 
@@ -285,8 +286,7 @@ output2$price_term = factor(output2$price_term)
 # Summarize
 ############################
 
-# print to screen summary stats for the normalized results, that is, summary stats behind the box plots:
-price_summary = aggregate(data=output2, value ~ price_term + year, FUN=function(x) c(mean =mean(x), median=median(x), sd=sd(x)))
+price_summary = aggregate(data=output2, value ~ price_term + year, FUN=function(x) c(mean =mean(x), median=median(x)))
 price_summary$value = round(price_summary$value,3)
 price_summary
 
