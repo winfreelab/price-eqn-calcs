@@ -21,10 +21,8 @@
 library(reshape)
 library(plyr)
 
+# this code runs the "time" version of the price calculations:
 this_code = "time"
-
-# this code runs the "space" version of the price calculations:
-this_code = "space"
 
 this_study = "EXAMPLE_CROP"
 
